@@ -13,7 +13,7 @@ publish {
     artifactId = 'base-core'
     publishVersion = '0.0.1'
     desc = 'Ryan Yu Base Library'
-    website = ''
+    website = 'https://github.com/ycofish/basecore'
 }
 
 version = "0.0.1"

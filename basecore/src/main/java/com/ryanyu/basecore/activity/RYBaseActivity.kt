@@ -21,11 +21,25 @@ import io.reactivex.Observable
 import io.reactivex.Observer
 
 /**
- * Update 2018-12-08
- *______  ___ ___  _______  _______      _____    _______  ______
- *|   __ \|   |   ||   _   ||    |  |    |     |_ |_     _||   __ \
- *|      < \     / |       ||       |    |       | _|   |_ |   __ <
- *|___|__|  |___|  |___|___||__|____|    |_______||_______||______/
+ * Update 2019-01-09
+ *
+ * ██████╗ ██╗   ██╗ █████╗ ███╗   ██╗    ██╗   ██╗██╗   ██╗    ██╗     ██╗██████╗ ██████╗  █████╗ ██████╗ ██╗   ██╗
+ * ██╔══██╗╚██╗ ██╔╝██╔══██╗████╗  ██║    ╚██╗ ██╔╝██║   ██║    ██║     ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝
+ * ██████╔╝ ╚████╔╝ ███████║██╔██╗ ██║     ╚████╔╝ ██║   ██║    ██║     ██║██████╔╝██████╔╝███████║██████╔╝ ╚████╔╝
+ * ██╔══██╗  ╚██╔╝  ██╔══██║██║╚██╗██║      ╚██╔╝  ██║   ██║    ██║     ██║██╔══██╗██╔══██╗██╔══██║██╔══██╗  ╚██╔╝
+ * ██║  ██║   ██║   ██║  ██║██║ ╚████║       ██║   ╚██████╔╝    ███████╗██║██████╔╝██║  ██║██║  ██║██║  ██║   ██║
+ * ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝       ╚═╝    ╚═════╝     ╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝
+ *
+ *
+ * 88888888ba          db          ad88888ba   88888888888    ,ad8888ba,     ,ad8888ba,    88888888ba   88888888888
+ * 88      "8b        d88b        d8"     "8b  88            d8"'    `"8b   d8"'    `"8b   88      "8b  88
+ * 88      ,8P       d8'`8b       Y8,          88           d8'            d8'        `8b  88      ,8P  88
+ * 88aaaaaa8P'      d8'  `8b      `Y8aaaaa,    88aaaaa      88             88          88  88aaaaaa8P'  88aaaaa
+ * 88""""""8b,     d8YaaaaY8b       `"""""8b,  88"""""      88             88          88  88""""88'    88"""""
+ * 88      `8b    d8""""""""8b            `8b  88           Y8,            Y8,        ,8P  88    `8b    88
+ * 88      a8P   d8'        `8b   Y8a     a8P  88            Y8a.    .a8P   Y8a.    .a8P   88     `8b   88
+ * 88888888P"   d8'          `8b   "Y88888P"   88888888888    `"Y8888Y"'     `"Y8888Y"'    88      `8b  88888888888
+ *
  *
  * Created by Ryan Yu.
  */
@@ -230,16 +244,19 @@ abstract class RYBaseActivity : FragmentActivity() {
                 View.VISIBLE else ryHeaderMenuBtn?.getIvHeaderMenuBtn()?.visibility = View.GONE
     }
 
-/* ----------------------- END ----------------------- */
 
-
-/* ----------------------- START ----------------------- */
     /**
-     * Fragment with Activity Result (Activity Code)
+     * ------------------------------------------------------------------------------------------------------------------------
+     * Fragment with Activity Result (Activity part)
      *
      * 1. implements RYFragmentActivityResult
      * 2. call setRYFragmentActivityResult(this)
-     **/
+     *
+     *
+     * @param requestCode Int
+     * @param resultCode Int
+     * @param data Intent?
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         fragmentActivityResultObserver?.let {
@@ -256,10 +273,20 @@ abstract class RYBaseActivity : FragmentActivity() {
         }
     }
 
+    /**
+     *
+     *
+     * @param fragmentActivityResultObserver Observer<ArrayList<Any>>
+     */
     fun setActivityResultObserver(fragmentActivityResultObserver: Observer<ArrayList<Any>>) {
         this.fragmentActivityResultObserver = fragmentActivityResultObserver
     }
-/* ----------------------- END ----------------------- */
+
+
+    /**
+     * ------------------------------------------------------------------------------------------------------------------------------
+     */
+
 
 
 /* ----------------------- START ----------------------- */
