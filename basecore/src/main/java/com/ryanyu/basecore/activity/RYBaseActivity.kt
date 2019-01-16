@@ -45,26 +45,76 @@ import io.reactivex.Observer
  */
 
 abstract class RYBaseActivity : FragmentActivity() {
+
+    /**
+     * set back button for base core control
+     *
+     * @return ImageView?
+     */
     abstract fun getIvHeaderBackBtn(): ImageView?
+
+    /**
+     * set header right button for base core control
+     *
+     * @return ImageView?
+     */
     abstract fun getIvHeaderRightBtn(): ImageView?
+
+    /**
+     * set header left button for base core control
+     *
+     * @return ImageView?
+     */
     abstract fun getIvHeaderLeftBtn(): ImageView?
+
+    /**
+     * set header view for base core control
+     *
+     * @return View?
+     */
     abstract fun geTvHeaderContent(): View?
+
+    /**
+     * set header title textview for base core control
+     *
+     * @return TextView?
+     */
     abstract fun getTvHeaderTitle(): TextView?
+
+    /**
+     * set fragment for base core control
+     *
+     * @return Int?
+     */
     abstract fun getRootFragmentId(): Int
 
-    private var pdRootLoadingDialog: ProgressDialog? = null
+    /**
+     * set BackStack by base core control
+     *
+     * @return Boolean?
+     */
+    abstract fun isAutoHiddenBack(): Boolean
+
+
     private var stopAutoBack = false
 
     var doubleBackToExitPressedOnce = false
-
-    abstract fun isAutoHiddenBack(): Boolean
-
     var fragmentActivityResultObserver: Observer<ArrayList<Any>>? = null
 
+    /**
+     * init base core
+     *
+     * !!!!!!must call!!!!
+     */
     fun initRoot() {
         initBackButton()
         initAutoBack()
     }
+
+    private fun initBackButton() {
+        getIvHeaderBackBtn()?.setOnClickListener { if (!stopAutoBack) onBackPressed() }
+    }
+
 
     private fun initAutoBack() {
         supportFragmentManager.addOnBackStackChangedListener {
@@ -79,60 +129,9 @@ abstract class RYBaseActivity : FragmentActivity() {
         }
     }
 
-    fun isCloseAutoBack(stopAutoBack: Boolean) {
-        this.stopAutoBack = stopAutoBack
-    }
-
-    fun setHeaderTitle(title: String?) {
-        getTvHeaderTitle()?.text = title
-    }
-
-    fun findFragment(): RYBaseFragment? {
-        return supportFragmentManager.findFragmentById(getRootFragmentId()) as? RYBaseFragment
-    }
-
-    fun getFragment(): RYBaseFragment? {
-        return if (getRootFragmentId() == 99) null else supportFragmentManager.findFragmentById(getRootFragmentId()) as RYBaseFragment
-    }
-
-    fun isShowHeaderView(show: Boolean) {
-        if (show) geTvHeaderContent()?.visibility = View.VISIBLE else geTvHeaderContent()?.visibility = View.GONE
-    }
-
-    fun isShowRightBtn(show: Boolean) {
-        if (show) getIvHeaderRightBtn()?.visibility = View.VISIBLE else getIvHeaderRightBtn()?.visibility = View.GONE
-    }
-
-    fun isShowLeftBtn(show: Boolean) {
-        if (show) getIvHeaderLeftBtn()?.visibility = View.VISIBLE else getIvHeaderLeftBtn()?.visibility = View.GONE
-    }
-
-    fun doubleBack() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed()
-            return
-        }
-
-        doubleBackToExitPressedOnce = true
-        displayPopupMessage(resources.getString(R.string.global_back_again))
-        Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
-    }
-
-    fun displayPopupMessage(message: String) {
-        Toast.makeText(this@RYBaseActivity, message, Toast.LENGTH_SHORT).show()
-    }
-
-    fun initBackButton() {
-        getIvHeaderBackBtn()?.setOnClickListener { if (!stopAutoBack) onBackPressed() }
-    }
-
-    fun switchRootFragment(type: Int?) {
-        switchFragment(RYLibSetting.initRYFragmentModule?.initFragment(type!!)!!)
-    }
-
-    fun switchFragment(f: RYBaseFragment) {
+    private fun switchFragment(f: RYBaseFragment) {
         closeDrawerLayout()
-        if (f.getFragmentType() === findFragment()?.getFragmentType()) return
+        if (f.getFragmentType() === getNowDisplayFragment()?.getFragmentType()) return
 
         for (i in 0 until supportFragmentManager.backStackEntryCount) {
             supportFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
@@ -141,30 +140,96 @@ abstract class RYBaseActivity : FragmentActivity() {
         val fragmentTransaction =
             supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
         fragmentTransaction.replace(getRootFragmentId(), f).commitAllowingStateLoss()
-
     }
 
+    /**
+     * Can stop/start the base core control BackStack
+     *
+     * @param stopAutoBack Boolean
+     */
+    fun isCloseAutoBack(stopAutoBack: Boolean) {
+        this.stopAutoBack = stopAutoBack
+    }
+
+
+    /**
+     * set the header title
+     *
+     * @param title String?
+     */
+    fun setHeaderTitle(title: String?) {
+        getTvHeaderTitle()?.text = title
+    }
+
+    /**
+     * find fragment of now show
+     *
+     * @return RYBaseFragment?
+     */
+    fun getNowDisplayFragment(): RYBaseFragment? {
+        return if (getRootFragmentId() == 99) null else supportFragmentManager.findFragmentById(getRootFragmentId()) as RYBaseFragment
+    }
+
+    /**
+     * set the headerview visibility
+     *
+     * @param show Boolean?
+     */
+    fun isShowHeaderView(show: Boolean) {
+        if (show) geTvHeaderContent()?.visibility = View.VISIBLE else geTvHeaderContent()?.visibility = View.GONE
+    }
+
+    /**
+     * set the header right button visibility
+     *
+     * @param show Boolean
+     */
+    fun isShowRightBtn(show: Boolean) {
+        if (show) getIvHeaderRightBtn()?.visibility = View.VISIBLE else getIvHeaderRightBtn()?.visibility = View.GONE
+    }
+
+    /**
+     * set the header left button visibility
+     *
+     * @param show Boolean
+     */
+    fun isShowLeftBtn(show: Boolean) {
+        if (show) getIvHeaderLeftBtn()?.visibility = View.VISIBLE else getIvHeaderLeftBtn()?.visibility = View.GONE
+    }
+
+    /**
+     * set the double back confirm function
+     */
+    fun doubleBack() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed()
+            return
+        }
+
+        doubleBackToExitPressedOnce = true
+        Toast.makeText(this@RYBaseActivity, resources.getString(R.string.global_back_again), Toast.LENGTH_SHORT).show()
+        Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+    }
+
+    /**
+     * Convert the root level of the fragment
+     *
+     * @param type Int?
+     */
+    fun switchRootFragment(type: Int?) {
+        switchFragment(RYLibSetting.initRYFragmentModule?.initFragment(type!!)!!)
+    }
+
+    /**
+     * Convert the child level of the fragment
+     *
+     * @param f RYBaseFragment
+     */
     fun switchToDetailPage(f: RYBaseFragment) {
         supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
             .addToBackStack(null)
             .replace(getRootFragmentId(), f)
             .commit()
-    }
-
-    fun showProgressDialog() {
-        dismissProgressDialog()
-        pdRootLoadingDialog = ProgressDialog(this)
-        pdRootLoadingDialog?.run {
-            setMessage(resources.getString(R.string.global_loading))
-            setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            setCancelable(false)
-            pdRootLoadingDialog?.show()
-        }
-    }
-
-    fun dismissProgressDialog() {
-        pdRootLoadingDialog?.let { if (it.isShowing) it.dismiss() }
-        pdRootLoadingDialog = null
     }
 
 

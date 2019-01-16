@@ -65,7 +65,7 @@ abstract class RYBaseFragment : Fragment() {
     }
 
     fun getFragment(): RYBaseFragment? {
-        return getContent()?.getFragment()
+        return getContent()?.getNowDisplayFragment()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,7 +116,7 @@ abstract class RYBaseFragment : Fragment() {
     }
 
     fun showMessage(text: String) {
-        getContent()?.displayPopupMessage(text)
+        getContent()?.easyToast(text)
     }
 
     fun switchToDetailPage(f: RYBaseFragment) {
