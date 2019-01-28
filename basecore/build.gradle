@@ -11,12 +11,12 @@ publish {
     groupId = 'com.ryanyu'
     uploadName = 'BaseCore'
     artifactId = 'base-core'
-    publishVersion = '0.0.2'
+    publishVersion = '0.0.4'
     desc = 'Ryan Yu Base Library'
     website = 'https://github.com/ycofish/basecore'
 }
 
-version = "0.0.2"
+version = "0.0.4"
 
 
 

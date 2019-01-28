@@ -6,6 +6,10 @@ package com.ryanyu.basecore.provider
 
 class Constant {
     companion object {
+        val EN = 0
+        val TC = 1
+        val SC = 2
+
         val SP_LANGUAGE_KEY = "sp_language"
         val SP_MEMBERSHIP_KEY = "sp_membership"
     }

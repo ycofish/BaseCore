@@ -5,10 +5,13 @@ import android.content.Context
 import android.os.Build
 import android.preference.PreferenceManager
 import com.ryanyu.basecore.provider.Constant
+import com.ryanyu.basecore.provider.Constant.Companion.EN
+import com.ryanyu.basecore.provider.Constant.Companion.SC
+import com.ryanyu.basecore.provider.Constant.Companion.TC
 import java.util.*
 
 /**
- * Update 2019-01-28
+ * Update 2019-01-29
  *
  * ██████╗ ██╗   ██╗ █████╗ ███╗   ██╗    ██╗   ██╗██╗   ██╗    ██╗     ██╗██████╗ ██████╗  █████╗ ██████╗ ██╗   ██╗
  * ██╔══██╗╚██╗ ██╔╝██╔══██╗████╗  ██║    ╚██╗ ██╔╝██║   ██║    ██║     ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝
@@ -31,24 +34,31 @@ import java.util.*
  * Created by Ryan Yu.
  */
 
-class RYApplication : Application() {
+open class RYApplication : Application() {
     var ctx: Context? = null
-    var currentLanguage = EN
+    var currentLanguage = Constant.EN
     init {
         instance = this
     }
 
     companion object {
-        val EN = 0
-        val TC = 1
-        val SC = 2
         var instance: RYApplication? = null
 
 
+        /**
+         * get Application
+         *
+         * @return RYApplication?
+         */
         fun getApplication(): RYApplication? {
             return instance
         }
 
+        /**
+         * get application context
+         *
+         * @return Context
+         */
         fun applicationContext(): Context {
             return instance!!.applicationContext
         }
@@ -58,8 +68,14 @@ class RYApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ctx = applicationContext()
+        initSharedPreference()
     }
 
+    /**
+     * for update language
+     *
+     * @param language Int
+     */
     fun updateLanguage(language : Int){
         this.currentLanguage = language
         refreshLanguage(ctx)
