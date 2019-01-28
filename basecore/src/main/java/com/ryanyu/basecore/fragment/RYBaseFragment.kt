@@ -11,6 +11,7 @@ import com.ryanyu.basecore.helper.RYLibSetting
 import com.ryanyu.basecore.listener.RYObserverEasyListener
 import com.ryanyu.basecore.observer.RYEasyObserver
 import com.ryanyu.basecore.activity.RYBaseActivity
+import com.ryanyu.basecore.utils.RYEasyFunction
 
 
 /**
@@ -87,7 +88,6 @@ abstract class RYBaseFragment : Fragment() {
     }
 
     fun switchRootFragment(f: Int) {
-
         getContent()?.switchRootFragment(f)
     }
 
@@ -116,7 +116,7 @@ abstract class RYBaseFragment : Fragment() {
     }
 
     fun showMessage(text: String) {
-        getContent()?.easyToast(text)
+        RYEasyFunction?.easyToast(ctx,text)
     }
 
     fun switchToDetailPage(f: RYBaseFragment) {
@@ -124,11 +124,11 @@ abstract class RYBaseFragment : Fragment() {
     }
 
     fun showProgressDialog() {
-        getContent()?.showProgressDialog()
+        RYEasyFunction?.showProgressDialog(ctx)
     }
 
     fun dismissProgressDialog() {
-        getContent()?.dismissProgressDialog()
+        RYEasyFunction?.dismissProgressDialog()
     }
 
     fun getContent(): RYBaseActivity? {

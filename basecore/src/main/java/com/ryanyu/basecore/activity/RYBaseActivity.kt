@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.ryanyu.basecore.helper.RYLibSetting
 import com.ryanyu.basecore.R
+import com.ryanyu.basecore.application.RYApplication
 import com.ryanyu.basecore.fragment.RYBaseFragment
 
 import io.reactivex.Observable
