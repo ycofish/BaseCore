@@ -4,9 +4,13 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.util.Log
 import com.ryanyu.basecore.R
+import com.ryanyu.basecore.listener.RYObserverEasyCancelListener
 import com.ryanyu.basecore.listener.RYObserverEasyListener
 import com.ryanyu.basecore.listener.RYObserverFullStatusListener
 import com.ryanyu.basecore.listener.RyObserverSingleStatusListener
+import com.ryanyu.basecore.utils.RYBox.TAG
+import com.ryanyu.basecore.utils.RYBox.dismissProgressDialog
+import com.ryanyu.basecore.utils.RYBox.showProgressDialog
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 
@@ -39,49 +43,254 @@ import io.reactivex.disposables.Disposable
 class RYEasyObserver<T> : Observer<T> {
     private var progressDialog: ProgressDialog? = null
     private var listener: RYObserverEasyListener<T>? = null
+    private var cancelListener: RYObserverEasyCancelListener<T>? = null
     private var fullListener: RYObserverFullStatusListener<T>? = null
     private var singleListener: RyObserverSingleStatusListener<T>? = null
     private var context: Context? = null
+    private var cancelLoading = false
+    private var startLoading = true
+    private var endLoading = true
 
+    /**
+     * only onNext and cancel
+     *
+     * @param context Context?
+     * @param listener RYObserverEasyCancelListener<T>?
+     * @constructor
+     */
+    constructor(context: Context?, listener: RYObserverEasyCancelListener<T>?) {
+        this.cancelListener = cancelListener
+        this.context = context
+    }
+
+
+    /**
+     * only onNext
+     *
+     * @param context Context?
+     * @param listener RYObserverEasyListener<T>?
+     * @constructor
+     */
     constructor(context: Context?, listener: RYObserverEasyListener<T>?) {
         this.listener = listener
         this.context = context
     }
 
+    /**
+     * onNext onFinish onError
+     *
+     * @param context Context?
+     * @param fullListener RYObserverFullStatusListener<T>?
+     * @constructor
+     */
     constructor(context: Context?, fullListener: RYObserverFullStatusListener<T>?) {
         this.fullListener = fullListener
         this.context = context
     }
 
+    /**
+     * onNext and onError
+     *
+     * @param context Context?
+     * @param singleListener RyObserverSingleStatusListener<T>?
+     * @constructor
+     */
     constructor(context: Context?, singleListener: RyObserverSingleStatusListener<T>?) {
         this.singleListener = singleListener
         this.context = context
     }
 
+
+    /**
+     * only onNext/Cancel and control isShowLoading
+     *
+     * @param context Context?
+     * @param listener RYObserverEasyListener<T>?
+     * @param cancelLoading Boolean
+     * @constructor
+     */
+    constructor(context: Context?, listener: RYObserverEasyCancelListener<T>?, cancelLoading: Boolean) {
+        this.cancelListener = listener
+        this.context = context
+        this.cancelLoading = cancelLoading
+    }
+
+
+    /**
+     * only onNext and control isShowLoading
+     *
+     * @param context Context?
+     * @param listener RYObserverEasyListener<T>?
+     * @param cancelLoading Boolean
+     * @constructor
+     */
+    constructor(context: Context?, listener: RYObserverEasyListener<T>?, cancelLoading: Boolean) {
+        this.listener = listener
+        this.context = context
+        this.cancelLoading = cancelLoading
+    }
+
+    /**
+     * onNext onFinish onError and control isShowLoading
+     *
+     * @param context Context?
+     * @param fullListener RYObserverFullStatusListener<T>?
+     * @param cancelLoading Boolean
+     * @constructor
+     */
+    constructor(context: Context?, fullListener: RYObserverFullStatusListener<T>?, cancelLoading: Boolean) {
+        this.fullListener = fullListener
+        this.context = context
+        this.cancelLoading = cancelLoading
+    }
+
+    /**
+     * onNext and onError and control isShowLoading
+     *
+     * @param context Context?
+     * @param singleListener RyObserverSingleStatusListener<T>?
+     * @param cancelLoading Boolean
+     * @constructor
+     */
+    constructor(context: Context?, singleListener: RyObserverSingleStatusListener<T>?, cancelLoading: Boolean) {
+        this.singleListener = singleListener
+        this.context = context
+        this.cancelLoading = cancelLoading
+    }
+
+
+    /**
+     * only onNext/Cancel and control start/end loading
+     *
+     * @param context Context?
+     * @param listener RYObserverEasyListener<T>?
+     * @param startLoading Boolean
+     * @param endLoading Boolean
+     * @constructor
+     */
+    constructor(context: Context?, listener: RYObserverEasyCancelListener<T>?, startLoading: Boolean, endLoading: Boolean) {
+        this.cancelListener = listener
+        this.context = context
+        this.startLoading = startLoading
+        this.endLoading = endLoading
+
+        if(!startLoading && !endLoading){
+            this.cancelLoading = true
+        }
+    }
+
+    /**
+     * only onNext and control start/end loading
+     *
+     * @param context Context?
+     * @param listener RYObserverEasyListener<T>?
+     * @param startLoading Boolean
+     * @param endLoading Boolean
+     * @constructor
+     */
+    constructor(context: Context?, listener: RYObserverEasyListener<T>?, startLoading: Boolean, endLoading: Boolean) {
+        this.listener = listener
+        this.context = context
+        this.startLoading = startLoading
+        this.endLoading = endLoading
+
+        if(!startLoading && !endLoading){
+            this.cancelLoading = true
+        }
+    }
+
+    /**
+     * onNext onFinish onError and control start/end loading
+     *
+     * @param context Context?
+     * @param fullListener RYObserverFullStatusListener<T>?
+     * @param startLoading Boolean
+     * @param endLoading Boolean
+     * @constructor
+     */
+    constructor(
+        context: Context?,
+        fullListener: RYObserverFullStatusListener<T>?,
+        startLoading: Boolean,
+        endLoading: Boolean
+    ) {
+        this.fullListener = fullListener
+        this.context = context
+        this.startLoading = startLoading
+        this.endLoading = endLoading
+
+        if(!startLoading && !endLoading){
+            this.cancelLoading = true
+        }
+    }
+
+    /**
+     * onNext and onError and control start/end loading
+     *
+     * @param context Context?
+     * @param singleListener RyObserverSingleStatusListener<T>?
+     * @param startLoading Boolean
+     * @param endLoading Boolean
+     * @constructor
+     */
+    constructor(
+        context: Context?,
+        singleListener: RyObserverSingleStatusListener<T>?,
+        startLoading: Boolean,
+        endLoading: Boolean
+    ) {
+        this.singleListener = singleListener
+        this.context = context
+        this.startLoading = startLoading
+        this.endLoading = endLoading
+
+        if(!startLoading && !endLoading){
+            this.cancelLoading = true
+        }
+    }
+
     override fun onSubscribe(d: Disposable) {
+        cancelListener?.onSubscribe(d)
         Log.d(TAG, "onSubscribe: ")
+        if (cancelLoading) {
+            return
+        }
+
+        if (!startLoading) {
+            return
+        }
+
         showProgressDialog()
+
     }
 
     override fun onNext(t: T) {
         fullListener?.onNext(t!!)
         singleListener?.onNext(t!!)
         listener?.onNext(t!!)
+        cancelListener?.onNext(t!!)
     }
 
     override fun onError(e: Throwable) {
         dismissProgressDialog()
         Log.e(TAG, "onError: ", e)
-
         fullListener?.onError()
         singleListener?.onError()
 
     }
 
     override fun onComplete() {
-        dismissProgressDialog()
         Log.d(TAG, "onComplete: ")
         fullListener?.onFinish()
+        if (cancelLoading) {
+            return
+        }
+
+        if(!endLoading){
+            return
+        }
+
+        dismissProgressDialog()
 
     }
 
@@ -108,7 +317,7 @@ class RYEasyObserver<T> : Observer<T> {
     }
 
     companion object {
-        private val TAG = "EasyObserver"
+        private val TAG = "RYAN EasyObserver"
     }
 
 }

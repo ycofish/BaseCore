@@ -1,23 +1,18 @@
 package com.ryanyu.basecore.activity
 
-import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Handler
 import android.support.v4.app.FragmentActivity
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentTransaction
+
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.view.View
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.ryanyu.basecore.helper.RYLibSetting
+import com.epiccomm.fsee.ryanlib.RYBaseFragment
 import com.ryanyu.basecore.R
-import com.ryanyu.basecore.application.RYApplication
-import com.ryanyu.basecore.fragment.RYBaseFragment
-
+import com.ryanyu.basecore.utils.RYBox
 import io.reactivex.Observable
 import io.reactivex.Observer
 
@@ -46,193 +41,30 @@ import io.reactivex.Observer
  */
 
 abstract class RYBaseActivity : FragmentActivity() {
-
-    /**
-     * set back button for base core control
-     *
-     * @return ImageView?
-     */
-    abstract fun getIvHeaderBackBtn(): ImageView?
-
-    /**
-     * set header right button for base core control
-     *
-     * @return ImageView?
-     */
-    abstract fun getIvHeaderRightBtn(): ImageView?
-
-    /**
-     * set header left button for base core control
-     *
-     * @return ImageView?
-     */
-    abstract fun getIvHeaderLeftBtn(): ImageView?
-
-    /**
-     * set header view for base core control
-     *
-     * @return View?
-     */
-    abstract fun geTvHeaderContent(): View?
-
-    /**
-     * set header title textview for base core control
-     *
-     * @return TextView?
-     */
-    abstract fun getTvHeaderTitle(): TextView?
-
-    /**
-     * set fragment for base core control
-     *
-     * @return Int?
-     */
-    abstract fun getRootFragmentId(): Int
-
-    /**
-     * set BackStack by base core control
-     *
-     * @return Boolean?
-     */
-    abstract fun isAutoHiddenBack(): Boolean
-
-
-    private var stopAutoBack = false
-
     var doubleBackToExitPressedOnce = false
     var fragmentActivityResultObserver: Observer<ArrayList<Any>>? = null
-
-    /**
-     * init base core
-     *
-     * !!!!!!must call!!!!
-     */
-    fun initRoot() {
-        initBackButton()
-        initAutoBack()
-    }
-
-    private fun initBackButton() {
-        getIvHeaderBackBtn()?.setOnClickListener { if (!stopAutoBack) onBackPressed() }
-    }
-
-
-    private fun initAutoBack() {
-        supportFragmentManager.addOnBackStackChangedListener {
-            if (isAutoHiddenBack() && !stopAutoBack && supportFragmentManager.backStackEntryCount > 0) getIvHeaderBackBtn()?.visibility =
-                    View.VISIBLE else getIvHeaderBackBtn()?.visibility = View.GONE
-            if (!isLockDrawer && supportFragmentManager.backStackEntryCount > 0) ryHeaderMenuDrawerMenu?.getDlContenDrawer()?.setDrawerLockMode(
-                DrawerLayout.LOCK_MODE_LOCKED_CLOSED
-            ) else ryHeaderMenuDrawerMenu?.getDlContenDrawer()?.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-            if (ryBaseTabBar?.isAutoDisplayTabBar()!! && supportFragmentManager.backStackEntryCount > 0) isShowTabBar(
-                false
-            ) else isShowTabBar(true)
-        }
-    }
-
-    private fun switchFragment(f: RYBaseFragment) {
-        closeDrawerLayout()
-        if (f.getFragmentType() === getNowDisplayFragment()?.getFragmentType()) return
-
-        for (i in 0 until supportFragmentManager.backStackEntryCount) {
-            supportFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        }
-
-        val fragmentTransaction =
-            supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-        fragmentTransaction.replace(getRootFragmentId(), f).commitAllowingStateLoss()
-    }
-
-    /**
-     * Can stop/start the base core control BackStack
-     *
-     * @param stopAutoBack Boolean
-     */
-    fun isCloseAutoBack(stopAutoBack: Boolean) {
-        this.stopAutoBack = stopAutoBack
-    }
-
-
-    /**
-     * set the header title
-     *
-     * @param title String?
-     */
-    fun setHeaderTitle(title: String?) {
-        getTvHeaderTitle()?.text = title
-    }
-
-    /**
-     * find fragment of now show
-     *
-     * @return RYBaseFragment?
-     */
-    fun getNowDisplayFragment(): RYBaseFragment? {
-        return if (getRootFragmentId() == 99) null else supportFragmentManager.findFragmentById(getRootFragmentId()) as RYBaseFragment
-    }
-
-    /**
-     * set the headerview visibility
-     *
-     * @param show Boolean?
-     */
-    fun isShowHeaderView(show: Boolean) {
-        if (show) geTvHeaderContent()?.visibility = View.VISIBLE else geTvHeaderContent()?.visibility = View.GONE
-    }
-
-    /**
-     * set the header right button visibility
-     *
-     * @param show Boolean
-     */
-    fun isShowRightBtn(show: Boolean) {
-        if (show) getIvHeaderRightBtn()?.visibility = View.VISIBLE else getIvHeaderRightBtn()?.visibility = View.GONE
-    }
-
-    /**
-     * set the header left button visibility
-     *
-     * @param show Boolean
-     */
-    fun isShowLeftBtn(show: Boolean) {
-        if (show) getIvHeaderLeftBtn()?.visibility = View.VISIBLE else getIvHeaderLeftBtn()?.visibility = View.GONE
-    }
-
+    var inRootPage = true
     /**
      * set the double back confirm function
      */
-    fun doubleBack() {
-        if (doubleBackToExitPressedOnce) {
+
+    fun doubleBack(rootPageKillApp : Boolean = true) {
+        if (doubleBackToExitPressedOnce || !inRootPage) {
             super.onBackPressed()
             return
         }
 
-        doubleBackToExitPressedOnce = true
-        Toast.makeText(this@RYBaseActivity, resources.getString(R.string.global_back_again), Toast.LENGTH_SHORT).show()
-        Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+        if(rootPageKillApp) {
+            doubleBackToExitPressedOnce = true
+            Toast.makeText(this@RYBaseActivity, resources.getString(R.string.global_back_again), Toast.LENGTH_SHORT).show()
+            Handler().postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+        }else{
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.addCategory(Intent.CATEGORY_HOME)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        }
     }
-
-    /**
-     * Convert the root level of the fragment
-     *
-     * @param type Int?
-     */
-    fun switchRootFragment(type: Int?) {
-        switchFragment(RYLibSetting.initRYFragmentModule?.initFragment(type!!)!!)
-    }
-
-    /**
-     * Convert the child level of the fragment
-     *
-     * @param f RYBaseFragment
-     */
-    fun switchToDetailPage(f: RYBaseFragment) {
-        supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            .addToBackStack(null)
-            .replace(getRootFragmentId(), f)
-            .commit()
-    }
-
 
     /* ----------------------- START ----------------------- */
     /**
@@ -244,14 +76,13 @@ abstract class RYBaseActivity : FragmentActivity() {
     var ryHeaderMenuDrawerMenu: RYHeaderMenuDrawerMenu? = null
     private var isLockDrawer = false
 
-
     interface RYHeaderMenuDrawerMenu {
-        fun getDlContenDrawer(): DrawerLayout
+        fun getDlContentDrawer(): DrawerLayout
         fun isLinkToMenuBtn(): Boolean
     }
 
     fun closeDrawerLayout() {
-        ryHeaderMenuDrawerMenu?.getDlContenDrawer()?.run {
+        ryHeaderMenuDrawerMenu?.getDlContentDrawer()?.run {
             if (isDrawerOpen(GravityCompat.START)) {
                 closeDrawer(GravityCompat.START)
             }
@@ -260,17 +91,87 @@ abstract class RYBaseActivity : FragmentActivity() {
 
     fun islockDrawerLayout(isLockDrawer: Boolean) {
         this.isLockDrawer = true
-        if (this.isLockDrawer) ryHeaderMenuDrawerMenu?.getDlContenDrawer()?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED) else ryHeaderMenuDrawerMenu?.getDlContenDrawer()?.setDrawerLockMode(
+        if (this.isLockDrawer) ryHeaderMenuDrawerMenu?.getDlContentDrawer()?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED) else ryHeaderMenuDrawerMenu?.getDlContentDrawer()?.setDrawerLockMode(
             DrawerLayout.LOCK_MODE_UNLOCKED
         )
     }
 
     fun toggleDrawerLayout() {
-        ryHeaderMenuDrawerMenu?.getDlContenDrawer()?.run {
+        ryHeaderMenuDrawerMenu?.getDlContentDrawer()?.run {
             if (isDrawerOpen(GravityCompat.START)) closeDrawer(GravityCompat.START) else openDrawer(GravityCompat.START)
         }
     }
 
+    /* ----------------------- START ----------------------- */
+
+    var ryBaseFragmentCore: RYBaseFragmentCore? = null
+
+    interface RYBaseFragmentCore {
+        fun getRootFragmentId(): Int
+        fun getFragment(fragmentType: Int): RYBaseFragment?
+    }
+
+    fun setRYBaseFragmentCore(ryBaseFragmentCore: RYBaseFragmentCore?) {
+        this.ryBaseFragmentCore = ryBaseFragmentCore
+    }
+
+    /**
+     * find fragment of now show
+     *
+     * @return RYBaseFragment?
+     */
+    fun getNowDisplayFragment(): RYBaseFragment? {
+        return if (ryBaseFragmentCore?.getRootFragmentId() == 99) null else supportFragmentManager.findFragmentById(ryBaseFragmentCore?.getRootFragmentId()!!) as? RYBaseFragment
+    }
+
+    private fun switchFragment(f: RYBaseFragment) {
+        closeDrawerLayout()
+        if (f.getFragmentType() === getNowDisplayFragment()?.getFragmentType()) return
+
+        for (i in 0 until supportFragmentManager.backStackEntryCount) {
+            supportFragmentManager.popBackStackImmediate(null, android.support.v4.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
+
+        val fragmentTransaction =
+            supportFragmentManager.beginTransaction().setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+        fragmentTransaction.replace(ryBaseFragmentCore?.getRootFragmentId()!!, f).commitAllowingStateLoss()
+    }
+
+    /**
+     * Convert the root level of the fragment
+     *
+     * @param type Int?
+     */
+    fun switchRootFragment(type: Int?) {
+        RYBox.hideKeyboard(this)
+        switchFragment(ryBaseFragmentCore?.getFragment(type!!)!!)
+    }
+
+    /**
+     * Convert the child level of the fragment
+     *
+     * @param f RYBaseFragment
+     */
+    fun switchToDetailPage(f: RYBaseFragment) {
+        RYBox.hideKeyboard(this)
+        supportFragmentManager.beginTransaction().setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            .addToBackStack(null)
+            .replace(ryBaseFragmentCore?.getRootFragmentId()!!, f)
+            .commit()
+    }
+
+    /**
+     * add the child level of the fragment
+     *
+     * @param f RYBaseFragment
+     */
+    fun switchToAddDetailPage(f: RYBaseFragment) {
+        RYBox.hideKeyboard(this)
+        supportFragmentManager.beginTransaction().setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            .addToBackStack(null)
+            .add(ryBaseFragmentCore?.getRootFragmentId()!!, f)
+            .commit()
+    }
 
 /* ----------------------- END ----------------------- */
 
@@ -300,6 +201,7 @@ abstract class RYBaseActivity : FragmentActivity() {
     fun initMenuButton(ryHeaderMenuBtn: RYHeaderMenuBtn?) {
         this.ryHeaderMenuBtn = ryHeaderMenuBtn
         this.ryHeaderMenuBtn?.getIvHeaderMenuBtn()?.setOnClickListener {
+            RYBox.hideKeyboard(this)
             if (ryHeaderMenuDrawerMenu?.isLinkToMenuBtn()!!) toggleDrawerLayout()
             onMenuBtnClickListener?.menuBtnClickListener()
         }
@@ -307,7 +209,7 @@ abstract class RYBaseActivity : FragmentActivity() {
 
     fun isShowMenuBtn(show: Boolean) {
         if (show) ryHeaderMenuBtn?.getIvHeaderMenuBtn()?.visibility =
-                View.VISIBLE else ryHeaderMenuBtn?.getIvHeaderMenuBtn()?.visibility = View.GONE
+            View.VISIBLE else ryHeaderMenuBtn?.getIvHeaderMenuBtn()?.visibility = View.GONE
     }
 
 
@@ -353,6 +255,140 @@ abstract class RYBaseActivity : FragmentActivity() {
      * ------------------------------------------------------------------------------------------------------------------------------
      */
 
+/* ----------------------- START ----------------------- */
+
+    /**
+     * Activity with header Control
+     **/
+
+
+    private var stopAutoBack = false
+    var ryBaseHeader: RYBaseHeader? = null
+
+
+    interface RYBaseHeader {
+        fun getHeader(): View?
+        fun getHeaderLeftBtn(): View?
+        fun getHeaderRightBtn(): View?
+        fun getHeaderBackBtn(): View?
+        fun getHeaderTitleTextView(): TextView?
+        fun isAutoHandleBackBtnDisplay(): Boolean
+    }
+
+    fun setRYBaseHeader(ryBaseHeader: RYBaseHeader) {
+        this.ryBaseHeader = ryBaseHeader
+    }
+
+    /**
+     * Can stop/start the base core control BackStack
+     *
+     * @param stopAutoBack Boolean
+     */
+    fun setAutoHandleBackBtnDisplay(stopAutoBack: Boolean) {
+        this.stopAutoBack = stopAutoBack
+    }
+
+    /**
+     * init base core
+     *
+     * !!!!!!must call!!!!
+     */
+    fun initRoot() {
+        initBackButton()
+        initAutoBack()
+    }
+
+    /**
+     * set the header title
+     *
+     * @param title String?
+     */
+    fun setHeaderTitle(title: String?) {
+        ryBaseHeader?.getHeaderTitleTextView()?.text = title
+    }
+
+
+    /**
+     * set the headerview visibility
+     *
+     * @param show Boolean?
+     */
+    fun isShowHeaderView(show: Boolean) {
+        if (show) ryBaseHeader?.getHeader()?.visibility = View.VISIBLE else ryBaseHeader?.getHeader()?.visibility =
+            View.GONE
+    }
+
+    /**
+     * set the header right button visibility
+     *
+     * @param show Boolean
+     */
+    fun isShowRightBtn(show: Boolean) {
+        if (show) ryBaseHeader?.getHeaderRightBtn()?.visibility = View.VISIBLE else ryBaseHeader?.getHeaderRightBtn()
+            ?.visibility = View.GONE
+    }
+
+    /**
+     * set the header left button visibility
+     *
+     * @param show Boolean
+     */
+    fun isShowLeftBtn(show: Boolean) {
+        if (show) ryBaseHeader?.getHeaderLeftBtn()?.visibility = View.VISIBLE else ryBaseHeader?.getHeaderLeftBtn()
+            ?.visibility = View.GONE
+    }
+
+    private fun initBackButton() {
+        ryBaseHeader?.getHeaderBackBtn()?.setOnClickListener {
+            RYBox.hideKeyboard(this)
+            if (!stopAutoBack) onBackPressed()
+
+        }
+    }
+
+    private fun initAutoBack() {
+        supportFragmentManager.addOnBackStackChangedListener {
+            RYBox.hideKeyboard(this)
+            if (supportFragmentManager.backStackEntryCount > 0) {
+                inRootPage = false
+
+                ryBaseHeader?.let{
+                    if (it.isAutoHandleBackBtnDisplay()!! && !stopAutoBack) {
+                        it.getHeaderBackBtn()?.visibility = View.VISIBLE
+                    }
+                }
+
+                ryHeaderMenuDrawerMenu?.let{
+                    if (!isLockDrawer) {
+                        it.getDlContentDrawer()
+                            ?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                    }
+                }
+
+                ryBaseTabBar?.let{
+                    if (it.isAutoHandleTabBarDisplay()!!) {
+                        isShowTabBar(false)
+                    }
+                }
+
+            } else {
+                inRootPage = true
+
+                ryBaseHeader?.let{
+                    it.getHeaderBackBtn()?.visibility = View.GONE
+                }
+
+                ryHeaderMenuDrawerMenu?.let{
+                    it.getDlContentDrawer()?.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+
+                }
+                isShowTabBar(true)
+            }
+        }
+    }
+
+
+/* ----------------------- END ----------------------- */
 
 
 /* ----------------------- START ----------------------- */
@@ -371,7 +407,7 @@ abstract class RYBaseActivity : FragmentActivity() {
         fun getTabBarBtnListener(): OnTabBarItemClickListener?
         fun getTabBarBtnSelectColor(): String?
         fun getTabBarBtnUnSelectColor(): String?
-        fun isAutoDisplayTabBar(): Boolean?
+        fun isAutoHandleTabBarDisplay(): Boolean?
     }
 
     interface RYTabBarBtnNumber {
@@ -400,14 +436,20 @@ abstract class RYBaseActivity : FragmentActivity() {
 
 
     fun isShowTabBar(show: Boolean) {
-        if (show) ryBaseTabBar?.getTabBar()?.visibility = View.VISIBLE else ryBaseTabBar?.getTabBar()?.visibility =
+        ryBaseTabBar?.let{
+            if (show) ryBaseTabBar?.getTabBar()?.visibility = View.VISIBLE else ryBaseTabBar?.getTabBar()?.visibility =
                 View.GONE
+        }
+
     }
 
     fun setRYBaseTabBar(ryBaseTabBar: RYBaseTabBar) {
         this.ryBaseTabBar = ryBaseTabBar
         for (i in 0 until ryBaseTabBar?.getTabBarBtn()?.size!!) {
-            this.ryBaseTabBar?.getTabBarBtn()?.get(i)?.setOnClickListener { view -> tabBarOnClickListener(i) }
+            this.ryBaseTabBar?.getTabBarBtn()?.get(i)?.setOnClickListener {
+                RYBox.hideKeyboard(this)
+                tabBarOnClickListener(i)
+            }
         }
     }
 
@@ -424,12 +466,22 @@ abstract class RYBaseActivity : FragmentActivity() {
         ryBaseTabBar?.getTabBarBtnListener()?.itemBtnClick(position)
     }
 
-    fun setFooterTabNumberVisibility(tabNumber: Int, onOff: Int) {
+    fun setRYTabBarBtnNumberVisibility(tabNumber: Int, onOff: Int) {
         ryTabBarBtnNumber?.getTabBarBtnNumberTv()?.get(tabNumber)?.visibility = onOff
     }
 
-    fun setFooterTabNumber(tabNumber: Int, num: String) {
+    fun setRYTabBarBtnNumber(tabNumber: Int, num: String) {
         ryTabBarBtnNumber?.getTabBarBtnNumberTv()?.get(tabNumber)?.text = num
+    }
+
+    fun setRYTabBarBtnNumberWithZeroCheck(tabNumber: Int, num: String) {
+        if (num.equals("0")) {
+            setRYTabBarBtnNumberVisibility(tabNumber, View.GONE)
+            ryTabBarBtnNumber?.getTabBarBtnNumberTv()?.get(tabNumber)?.text = num
+        } else {
+            setRYTabBarBtnNumberVisibility(tabNumber, View.VISIBLE)
+            ryTabBarBtnNumber?.getTabBarBtnNumberTv()?.get(tabNumber)?.text = num
+        }
     }
 
     fun unSelectAllTabBar() {

@@ -1,5 +1,6 @@
-package com.ryanyu.basecore.helper
+package com.ryanyu.basecore.listener
 
+import io.reactivex.disposables.Disposable
 
 /**
  * Update 2019-01-09
@@ -25,6 +26,8 @@ package com.ryanyu.basecore.helper
  * Created by Ryan Yu.
  */
 
-object RYLibSetting {
-    var headerBackBtnIcon: Int? = null
+
+interface RYObserverEasyCancelListener<T> {
+    fun onNext(t: T)
+    fun onSubscribe(d: Disposable)
 }

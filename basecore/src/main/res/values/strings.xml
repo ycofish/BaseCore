@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">basecore</string>
-    <string name="global_back_again">再按多次返回鍵退出</string>
-    <string name="global_loading">載入中...</string>
+    <string name="global_back_again">Press the multiple return button again to exit</string>
+    <string name="global_loading">Loading...</string>
 </resources>

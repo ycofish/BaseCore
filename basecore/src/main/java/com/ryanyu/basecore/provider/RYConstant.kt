@@ -4,7 +4,7 @@ package com.ryanyu.basecore.provider
  * Created by Ryan Yu on 28/1/2019.
  */
 
-class Constant {
+class RYConstant {
     companion object {
         val EN = 0
         val TC = 1

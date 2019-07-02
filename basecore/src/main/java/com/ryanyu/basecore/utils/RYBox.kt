@@ -1,20 +1,27 @@
 package com.ryanyu.basecore.utils
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
+import android.os.Handler
 import android.util.DisplayMetrics
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import com.ryanyu.basecore.R
+import com.ryanyu.basecore.observer.RYEasyObserver
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
+import android.support.v4.os.HandlerCompat.postDelayed
+import com.ryanyu.basecore.listener.RYWaitListener
+
 
 /**
  * Created by Ryan Yu on 9/1/2019.
  */
 
-object RYEasyFunction {
+object RYBox {
     private var pdRootLoadingDialog: ProgressDialog? = null
 
     fun <A, B> setAPIValue(value1: A, value2: B): ArrayList<Any> {
@@ -51,6 +58,74 @@ object RYEasyFunction {
         return array
     }
 
+    fun getId(resName: String, c: Class<*>): Int {
+        try {
+            val idField = c.getDeclaredField(resName)
+            return idField.getInt(idField)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+    }
+
+    fun getDrawable(ctx: Context, resName: String): Int {
+        val id = ctx.getResources().getIdentifier(resName, "drawable", ctx.getPackageName())
+        return id
+    }
+
+
+    fun hideKeyboard(activity: Activity) {
+        val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        //Find the currently focused view, so we can grab the correct window token from it.
+        var view = activity.currentFocus
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = View(activity)
+        }
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun easyText(ctx: Context?, stringKey: Int?): String {
+        return stringKey?.let { ctx?.resources?.getString(it) } ?: ""
+    }
+
+
+    fun getCorrectDateFormat(date: String, fromDateFormat: String, toDateFormat: String): String {
+        val newDateFormat = SimpleDateFormat(toDateFormat)
+        val oldDateFormat = SimpleDateFormat(fromDateFormat)
+        try {
+            val DateD = oldDateFormat.parse(date)
+            return newDateFormat.format(DateD)
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        }
+        return newDateFormat.format(date)
+    }
+
+
+    fun getCorrectDateFormatReturnDate(date: String, fromDateFormat: String, toDateFormat: String): Date? {
+        val newDateFormat = SimpleDateFormat(toDateFormat)
+        val oldDateFormat = SimpleDateFormat(fromDateFormat)
+        try {
+            val DateD = oldDateFormat.parse(date)
+            var newDateString = newDateFormat.format(DateD)
+            return newDateFormat.parse(newDateString)
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    val TAG = "RYANLog"
+
+    fun Log(value: String) {
+        android.util.Log.d(TAG, value)
+    }
+
+    fun systemLog(value: Any) {
+        System.out.println("$TAG $value")
+    }
+
     /**
      * show loading dilaog
      *
@@ -60,7 +135,7 @@ object RYEasyFunction {
         dismissProgressDialog()
         pdRootLoadingDialog = ProgressDialog(ctx)
         pdRootLoadingDialog?.run {
-            setMessage(ctx?.resources?.getString(R.string.global_loading))
+            setMessage(ctx?.resources?.getString(com.ryanyu.basecore.R.string.global_loading))
             setProgressStyle(ProgressDialog.STYLE_SPINNER)
             setCancelable(false)
             pdRootLoadingDialog?.show()
@@ -80,7 +155,7 @@ object RYEasyFunction {
      *
      * @param message String
      */
-    fun easyToast(ctx: Context?, message: String) {
+    fun easyToast(ctx: Context?, message: String?) {
         Toast.makeText(ctx, message, Toast.LENGTH_SHORT).show()
     }
 
@@ -168,5 +243,28 @@ object RYEasyFunction {
 
         return false
     }
+
+    fun <T> ryWait(sec: Long, function: () -> T) {
+        val handler = Handler()
+        handler.postDelayed({
+            function()
+        }, sec * 1000)
+    }
+
+
+    fun <T> ryWait(sec: Long, value: T, function: (value: T) -> Unit) {
+        val handler = Handler()
+        handler.postDelayed({
+            function(value)
+        }, sec * 1000)
+    }
+
+    fun ryWait(sec: Long, listener: RYWaitListener) {
+        val handler = Handler()
+        handler.postDelayed({
+            listener.onTimeIsUp()
+        }, sec * 1000)
+    }
+
 
 }

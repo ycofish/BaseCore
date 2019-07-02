@@ -1,4 +1,4 @@
-package com.ryanyu.basecore.fragment
+package com.epiccomm.fsee.ryanlib
 
 import android.content.Context
 import android.content.Intent
@@ -11,7 +11,8 @@ import com.ryanyu.basecore.helper.RYLibSetting
 import com.ryanyu.basecore.listener.RYObserverEasyListener
 import com.ryanyu.basecore.observer.RYEasyObserver
 import com.ryanyu.basecore.activity.RYBaseActivity
-import com.ryanyu.basecore.utils.RYEasyFunction
+import com.ryanyu.basecore.listener.RYWaitListener
+import com.ryanyu.basecore.utils.RYBox
 
 
 /**
@@ -41,29 +42,8 @@ import com.ryanyu.basecore.utils.RYEasyFunction
 abstract class RYBaseFragment : Fragment() {
     var ctx: Context? = activity
 
-    abstract fun isShowHeaderView(): Boolean
-
-    abstract fun isShowLeftBtn(): Boolean
-
-    abstract fun isShowRightBtn(): Boolean
-
-    abstract fun isSetBackBtn(): Boolean
 
     abstract fun getFragmentType(): Int
-
-    abstract fun setHeaderTitle(): String?
-
-    fun getLeftBtn(): ImageView? {
-        return getContent()?.getIvHeaderLeftBtn()
-    }
-
-    fun getBackButton(): ImageView? {
-        return getContent()?.getIvHeaderBackBtn()
-    }
-
-    fun getRightBtn(): ImageView? {
-        return getContent()?.getIvHeaderRightBtn()
-    }
 
     fun getFragment(): RYBaseFragment? {
         return getContent()?.getNowDisplayFragment()
@@ -74,68 +54,22 @@ abstract class RYBaseFragment : Fragment() {
         ctx = activity
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setBackEvent()
-        setLeftBtn(isShowLeftBtn())
-        setRightBtn(isShowRightBtn())
-        setHeaderView()
-        setTitle(setHeaderTitle())
-    }
-
-    fun isCloseAutoBack(boolean: Boolean) {
-        getContent()?.isCloseAutoBack(boolean)
-    }
-
     fun switchRootFragment(f: Int) {
         getContent()?.switchRootFragment(f)
     }
 
-    fun setHeaderView() {
-        if (isShowHeaderView()) getContent()?.isShowHeaderView(true) else getContent()?.isShowHeaderView(false)
-    }
-
-    fun setTitle(title: String?) {
-        getContent()?.setHeaderTitle(title)
-    }
-
-    fun setBackEvent() {
-        if (isSetBackBtn() && RYLibSetting.headerBackBtnIcon !=null ) getBackButton()?.run {
-            visibility = View.VISIBLE
-            setImageDrawable(ContextCompat.getDrawable(activity!!, RYLibSetting.headerBackBtnIcon!!))
-            setOnClickListener { activity!!.onBackPressed() }
-        }
-    }
-
-    fun setRightBtn(boolean: Boolean) {
-        getContent()?.isShowRightBtn(boolean)
-    }
-
-    fun setLeftBtn(boolean: Boolean) {
-        getContent()?.isShowLeftBtn(boolean)
-    }
-
-    fun showMessage(text: String) {
-        RYEasyFunction?.easyToast(ctx,text)
-    }
 
     fun switchToDetailPage(f: RYBaseFragment) {
         getContent()?.switchToDetailPage(f)
     }
 
-    fun showProgressDialog() {
-        RYEasyFunction?.showProgressDialog(ctx)
-    }
-
-    fun dismissProgressDialog() {
-        RYEasyFunction?.dismissProgressDialog()
+    fun switchToAddDetailPage(f: RYBaseFragment) {
+        getContent()?.switchToAddDetailPage(f)
     }
 
     fun getContent(): RYBaseActivity? {
         return if (ctx is RYBaseActivity) (ctx as RYBaseActivity) else null
     }
-
-    fun easyString(id: Int): String? = ctx?.resources?.getString(id)
 
 /* ----------------------- START ----------------------- */
     /**
@@ -174,12 +108,24 @@ abstract class RYBaseFragment : Fragment() {
         setRYTarBar(ryBaseTabBar?.isShowTarBarView())
     }
 
-    fun setRYTarBar(isShow : Boolean?) {
+    fun setRYTarBar(isShow: Boolean?) {
         if (isShow == true) getContent()?.isShowTabBar(true) else getContent()?.isShowTabBar(false)
     }
 
-/* ----------------------- END ----------------------- */
+    fun setRYTabBarBtnNumberVisibility(tabNumber: Int, onOff: Int) {
+        getContent()?.setRYTabBarBtnNumberVisibility(tabNumber,onOff)
+    }
 
+    fun setRYTabBarBtnNumber(tabNumber: Int, num: String) {
+        getContent()?.setRYTabBarBtnNumber(tabNumber,num)
+    }
+
+    fun setRYTabBarBtnNumberWithZeroCheck(tabNumber: Int, num: String) {
+        getContent()?.setRYTabBarBtnNumberWithZeroCheck(tabNumber,num)
+    }
+
+
+/* ----------------------- END ----------------------- */
 
 
 /* ----------------------- START ryHeaderMenuBtn */
@@ -217,5 +163,115 @@ abstract class RYBaseFragment : Fragment() {
         return ctx?.let { RYEasyObserver(it, listener) } as io.reactivex.Observer<ArrayList<Any>>
     }
 /* ----------------------- END ----------------------- */
+
+    fun setTitle(title: String?) {
+        getContent()?.setHeaderTitle(title)
+    }
+
+
+    fun getLeftBtn(): View? {
+        return getContent()?.ryBaseHeader?.getHeaderLeftBtn()
+    }
+
+    fun getBackButton(): View? {
+        return getContent()?.ryBaseHeader?.getHeaderBackBtn()
+    }
+
+    fun getRightBtn(): View? {
+        return getContent()?.ryBaseHeader?.getHeaderRightBtn()
+    }
+
+    fun initRyBaseHeader() {
+        isShowLeftBtn(ryBaseHeader?.isShowLeftBtn()!!)
+        isShowRightBtn(ryBaseHeader?.isShowRightBtn()!!)
+        setHeaderView()
+        setTitle(ryBaseHeader?.setHeaderTitle())
+        setBackEvent()
+    }
+
+    fun setAutoHandleBackBtnDisplay(boolean: Boolean) {
+        getContent()?.setAutoHandleBackBtnDisplay(boolean)
+    }
+
+    fun setHeaderView() {
+        if (ryBaseHeader?.isShowHeaderView()!!) getContent()?.isShowHeaderView(true) else getContent()?.isShowHeaderView(
+            false
+        )
+    }
+
+    fun setBackEvent() {
+        if (ryBaseHeader?.isSetBackBtn()!! && RYLibSetting.headerBackBtnIcon != null)
+            (getBackButton() as ImageView)?.run {
+                visibility = View.VISIBLE
+                setImageDrawable(ContextCompat.getDrawable(activity!!, RYLibSetting.headerBackBtnIcon!!))
+                setOnClickListener { activity!!.onBackPressed() }
+            }
+    }
+
+    fun isShowRightBtn(boolean: Boolean) {
+        getContent()?.isShowRightBtn(boolean)
+    }
+
+    fun isShowLeftBtn(boolean: Boolean) {
+        getContent()?.isShowLeftBtn(boolean)
+    }
+
+    var ryBaseHeader: RYBaseHeader? = null
+
+    interface RYBaseHeader {
+        fun isShowHeaderView(): Boolean
+        fun isShowLeftBtn(): Boolean
+        fun isShowRightBtn(): Boolean
+        fun isSetBackBtn(): Boolean
+        fun setHeaderTitle(): String?
+    }
+
+    fun setRYBaseHeader(ryBaseHeader: RYBaseHeader) {
+        this.ryBaseHeader = ryBaseHeader
+    }
+
+
+    /* ----------------------- START ryBox */
+
+    /**
+     * ryBox Function
+     *
+     */
+
+    fun ryToast(text: String?) {
+        if (text == null) return
+        RYBox?.easyToast(ctx, text)
+    }
+
+    fun ryToast(id: Int?) {
+        if (id == null) return
+        RYBox?.easyToast(ctx, RYBox?.easyText(ctx, id))
+    }
+
+    fun ryString(id: Int): String = RYBox?.easyText(ctx, id)
+
+
+    fun ryLoading() {
+        RYBox?.showProgressDialog(ctx)
+    }
+
+    fun ryLoadingDismiss() {
+        RYBox?.dismissProgressDialog()
+    }
+
+    fun <T> ryWait(sec: Long, function: () -> T) {
+        RYBox.ryWait(sec, function)
+    }
+
+    fun <T> ryWait(sec: Long, value: T, function: (value: T) -> Unit) {
+        RYBox.ryWait(sec, value, function)
+    }
+
+    fun ryWait(sec: Long, listener: RYWaitListener) {
+        RYBox.ryWait(sec, listener)
+    }
+
+    /* ----------------------- END ----------------------- */
+
 
 }

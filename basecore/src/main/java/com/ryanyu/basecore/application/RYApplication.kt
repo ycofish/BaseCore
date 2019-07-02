@@ -4,10 +4,10 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.preference.PreferenceManager
-import com.ryanyu.basecore.provider.Constant
-import com.ryanyu.basecore.provider.Constant.Companion.EN
-import com.ryanyu.basecore.provider.Constant.Companion.SC
-import com.ryanyu.basecore.provider.Constant.Companion.TC
+import com.ryanyu.basecore.provider.RYConstant
+import com.ryanyu.basecore.provider.RYConstant.Companion.EN
+import com.ryanyu.basecore.provider.RYConstant.Companion.SC
+import com.ryanyu.basecore.provider.RYConstant.Companion.TC
 import java.util.*
 
 /**
@@ -36,7 +36,7 @@ import java.util.*
 
 open class RYApplication : Application() {
     var ctx: Context? = null
-    var currentLanguage = Constant.EN
+    var currentLanguage = RYConstant.EN
     init {
         instance = this
     }
@@ -83,7 +83,7 @@ open class RYApplication : Application() {
 
     private fun initSharedPreference() {
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
-        currentLanguage = sp.getInt(Constant.SP_LANGUAGE_KEY, -1)
+        currentLanguage = sp.getInt(RYConstant.SP_LANGUAGE_KEY, -1)
         if (currentLanguage == -1) {
             getDefaultLanguage()
         } else {
@@ -139,7 +139,7 @@ open class RYApplication : Application() {
 
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
 
-        sp.edit().putInt(Constant.SP_LANGUAGE_KEY, currentLanguage).apply()
+        sp.edit().putInt(RYConstant.SP_LANGUAGE_KEY, currentLanguage).apply()
 
     }
 
